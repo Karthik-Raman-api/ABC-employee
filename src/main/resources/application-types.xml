@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="json" format="json">
+      <types:shape format="weave" example="examples/sample.json"><![CDATA[%dw 2.0
+
+type json = Array<{|  Id: Number {"typeId": "int"},   Name: String,   email: String,   age: Number {"typeId": "int"},   city: String,   Project: String,   Manager: String|}> {"example": "[{\\\"Id\\\":1,\\\"Name\\\":\\\"karthik\\\",\\\"email\\\":\\\"karthik@apisero.com\\\",\\\"age\\\":25,\\\"city\\\":\\\"nagpur\\\",\\\"Project\\\":\\\"ABC\\\",\\\"Manager\\\":\\\"deepak\\\"},{\\\"Id\\\":2,\\\"Name\\\":\\\"deepak\\\",\\\"email\\\":\\\"deepak@apisero.com\\\",\\\"age\\\":35,\\\"city\\\":\\\"pune\\\",\\\"Project\\\":\\\"ABC\\\",\\\"Manager\\\":\\\"umesh\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="json2" format="json">
+      <types:shape format="weave" example="examples/sample-1.json"><![CDATA[%dw 2.0
+
+type json2 = {|
+  Id: Number {"typeId": "int"}, 
+  Name: String, 
+  email: String, 
+  age: Number {"typeId": "int"}, 
+  city: String, 
+  Project: String, 
+  Manager: String
+|} {"example": "{\\\"Id\\\":2,\\\"Name\\\":\\\"deepak\\\",\\\"email\\\":\\\"deepak@apisero.com\\\",\\\"age\\\":35,\\\"city\\\":\\\"pune\\\",\\\"Project\\\":\\\"ABC\\\",\\\"Manager\\\":\\\"umesh\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#f30d715b-53c3-4e5d-8e3e-642b2fdc411f">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="json"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#5a78440a-aa71-44da-8d76-bc7a29e74d74">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="postsync" type="json2"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#332a1e93-a49d-4066-a119-01620ecf7b67">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="upandsync" type="json2"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

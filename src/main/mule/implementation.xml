@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="getempbyid" doc:id="677bf074-380b-4e35-8dd2-ea4a4942de67" >
+		<db:select doc:name="Select" doc:id="8864dc50-49d7-42fa-984c-2ab6b4aa158d" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select * from employee where Id=:Id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"Id":payload.Id__c
+}]]]></db:input-parameters>
+		</db:select>
+		<validation:is-not-null doc:name="Is not null" doc:id="ef4b76bf-a5bb-4bba-95fa-8a0d2fcb57b3" config-ref="Validation_Config" value="#[payload]" message='#["Payload is empty"]'/>
+		<ee:transform doc:name="Db jva to json" doc:id="29e0db8b-938f-49e8-8094-e2d07af070d0">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	Id: payload01[0].Id__c,
+	Name: payload01[0].Name,
+	email: payload01[0].email__c,
+	age: payload01[0].age__c,
+	city: payload01[0].city__c,
+	Project: payload01[0].Project__c,
+	Manager: payload01[0].Manager__c
+}]]></ee:set-payload>
+				<ee:set-attributes resource="dataweave/j2j.dwl" />
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+	<flow name="getallemp" doc:id="684dd194-0249-4e7c-9e9d-0938b3debe5c">
+		<db:select doc:name="Select data from db" doc:id="954d129c-ec51-4217-b50d-ea74b6356c6d" config-ref="Database_Config">
+			<db:sql><![CDATA[Select * from employee;]]></db:sql>
+		</db:select>
+		<validation:is-not-null doc:name="Is not null" doc:id="e510e1dd-b93f-49db-a010-4167fa441492" config-ref="Validation_Config" value="#[payload]" message='#["Payload is empty"]'/>
+		<ee:transform doc:name="Db java to json" doc:id="f30d715b-53c3-4e5d-8e3e-642b2fdc411f">
+			<ee:message>
+				<ee:set-payload resource="dataweave/j2jei.dwl" />
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+	<flow name="postdbandsf" doc:id="f51e36f9-e043-4fc4-8a3b-dcb03af51021">
+		<set-variable value="#[payload]" doc:name="Store post data to sync" doc:id="f38a3e24-baa5-44bd-8f1b-7d20a86b4e1e" variableName="postsync"/>
+		<db:insert doc:name="Insert" doc:id="8ec6d3d2-6c74-4850-ba00-6a13232432dc" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO employee (Id, Name, email, age, city, Project, Manager) VALUES (:Id, :Name, :email, :age, :city, :Project, :Manager)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"Id": payload.Id__c,
+	"Name": payload.Name,
+	"email": payload.email__c,
+	"age": payload.age__c,
+	"city": payload.city__c,
+	"Project": payload.project__c,
+	"Manager": payload.manager__c
+}]]]></db:input-parameters>
+		</db:insert>
+		<validation:is-not-null doc:name="Is not null" doc:id="2f5cb146-14eb-4204-9d7c-21c346add503" config-ref="Validation_Config" value="#[payload]" message='#["Payload is empty"]'/>
+		<ee:transform doc:name="Json-&gt;Java" doc:id="5a78440a-aa71-44da-8d76-bc7a29e74d74">
+			<ee:message>
+				<ee:set-payload resource="dataweave/j2jpo.dwl" />
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="employee__c" doc:name="Create" doc:id="ba010be1-3e87-412d-986c-1ec21ef1dd81" config-ref="Salesforce_Config">
+		</salesforce:create>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+	<flow name="putdbandsf" doc:id="ef8ce67d-d4ee-4837-bed9-c797502e7c22">
+		<set-variable value="#[payload]" doc:name="Store update data to sync" doc:id="b115d137-90f1-4867-90c9-d173223f6da4" variableName="upandsync"/>
+		<db:update doc:name="Update" doc:id="bb745b0b-72f1-4101-8c7d-684623ea60b8" config-ref="Database_Config">
+			<db:sql ><![CDATA[update employee set Name=:Name, email=:email, age=:age, city=:city, Project=:Project, Manager=:Manager where Id=:Id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"Id": payload.Id__c,
+	"Name": payload.Name,
+	"email": payload.email__c,
+	"age": payload.age__c,
+	"city": payload.city__c,
+	"Project": payload.project__c,
+	"Manager": payload.manager__c
+}]]]></db:input-parameters>
+		</db:update>
+		<validation:is-not-null doc:name="Is not null" doc:id="cd1c859d-c412-4171-973b-1344bc9983f7" config-ref="Validation_Config" value="#[payload]" message='#["Payload is empty"]'/>
+		<ee:transform doc:name="Json-&gt;Java" doc:id="332a1e93-a49d-4066-a119-01620ecf7b67">
+			<ee:message>
+				<ee:set-payload resource="dataweave/j2jpu.dwl" />
+			</ee:message>
+		</ee:transform>
+		<salesforce:update type="employee__c" doc:name="Update" doc:id="983f6925-b1d3-44fc-a2b1-4a67d7fc5a3b" config-ref="Salesforce_Config">
+		</salesforce:update>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+	<flow name="Deleteandsf" doc:id="cb1049bb-5b20-4baf-b794-68bdd6119767">
+		<set-variable value="#[payload]" doc:name="Store delete data to sync" doc:id="ac902606-e6d2-4dd9-8739-3c8c2f84879f" variableName="delandsync"/>
+		<db:delete doc:name="Delete" doc:id="9bf976b1-1265-4af4-a479-8ff56473160e" config-ref="Database_Config">
+			<db:sql ><![CDATA[delete from employee where Id=:Id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"Id":payload.Id__c
+}]]]></db:input-parameters>
+		</db:delete>
+		<validation:is-not-null doc:name="Is not null" doc:id="266a5a3b-b4b9-4390-ad12-55e8357169f3" config-ref="Validation_Config" value="#[payload]" message='#["Payload is empty"]'/>
+		<ee:transform doc:name="Json-&gt;Java" doc:id="54d8ac64-f1fd-441f-8f3d-346ded569782" >
+			<ee:message >
+				<ee:set-payload resource="dataweave/j2jd.dwl" />
+			</ee:message>
+		</ee:transform>
+		<salesforce:delete doc:name="Delete" doc:id="b8bb92ff-75f3-4505-a2fd-516d5f1beedc" config-ref="Salesforce_Config"/>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+	<flow name="CsvScheduler" doc:id="76343f00-b5bc-43da-9b87-bfda9d8194f1" >
+		<scheduler doc:name="Scheduler" doc:id="9237ba9c-662a-4870-a339-81e7fa048459" >
+			<scheduling-strategy >
+				<cron expression="${csv.cron}" />
+			</scheduling-strategy>
+		</scheduler>
+		<db:select doc:name="Select" doc:id="0d672532-1cc4-416b-aab9-d66f7dfc758c" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from employee]]></db:sql>
+		</db:select>
+		<validation:is-not-null doc:name="Is not null" doc:id="ee2e1f1d-1cb2-459b-8bf2-5b1d49fea6a5" config-ref="Validation_Config" value="#[payload]" message='#["Payload is empty"]'/>
+		<ee:transform doc:name="Db java to csv" doc:id="28c1ad29-7e33-4a38-83cc-43ea2aa509cf">
+			<ee:message>
+				<ee:set-payload resource="dataweave/j2c.dwl" />
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="Write" doc:id="136862b8-48f5-427a-b1bb-9d87c949cf10" config-ref="File_Config" path="${csv.dir}"/>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+</mule>

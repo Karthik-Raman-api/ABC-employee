@@ -1,0 +1,20 @@
+[
+	{
+	Id: 1,
+	Name: "karthik",
+	email: "karthik@apisero.com",
+	age: 25,
+	city: "nagpur",
+	Project: "ABC",
+	Manager: "deepak"
+        },
+	{
+	Id: 2,
+	Name: "deepak",
+	email: "deepak@apisero.com",
+	age: 35,
+	city: "pune",
+	Project: "ABC",
+	Manager: "umesh"
+        }
+]

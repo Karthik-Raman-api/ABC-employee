@@ -1,0 +1,149 @@
+#%RAML 1.0
+title: ABC Pvt Ltd
+
+types:
+  employee: any
+
+traits:
+  client-id-required:
+    headers:
+      clientiD:
+        type: string
+        required: true
+      clientSec:
+        type: string
+        required: true
+
+/emp:
+  is: client-id-required
+  get:
+    description: Get employee details
+    responses:
+      200:
+        description: Successful, Data has been fetched !
+        body:
+          application/json:
+            type: employee
+            examples: !include /emp_example.raml
+      400:
+        description: Bad Request.
+        body:
+          application/json:
+            example:
+              message: Bad Request error
+      404:
+        description: Not Found.
+        body:
+          application/json:
+            example:
+              message: Employee Not Found
+      500:
+        description: Internal Server error.
+        body:
+          application/json:
+            example:
+              message: Internal Server error
+
+  post:
+    body:
+      application/json:
+        type: employee
+        examples: !include NoIdexample.raml
+
+    responses:
+      201:
+        description: Successfully created
+        body:
+          application/json:
+            example:
+              message: Data added(not really)
+      400:
+        description: Bad Request.
+        body:
+          application/json:
+            example:
+              message: Bad Request error
+      500:
+        description: Internal Server error.
+        body:
+          application/json:
+            example:
+              message: Internal Server error
+  /{ID}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              type: employee
+              examples: !include NoIdexample.raml
+        400:
+          body:
+            application/json:
+              example:
+                message: Bad Request error
+        404:
+          description: Not Found.
+          body:
+            application/json:
+              example:
+                message: Employee Not Found
+        500:
+          description: Internal Server error.
+          body:
+            application/json:
+              example:
+                message: Internal Server error
+
+  put:
+      body:
+        application/json:
+          type: employee
+          example: !include NoIdexample.raml
+      responses:
+        201:
+          body:
+            application/json:
+              example:
+                message: Data updated(But not really)
+        400:
+          body:
+            application/json:
+              example:
+                message: Bad Request error
+        404:
+          description: Not Found.
+          body:
+            application/json:
+              example:
+                message: Employee Not Found
+        500:
+          description: Internal Server error.
+          body:
+            application/json:
+              example:
+                message: Internal Server error
+  delete:
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              message: Employee Deleted (not Really)
+      404:
+          description: Not Found.
+          body:
+            application/json:
+              example:
+                message: Employee Not Found
+      500:
+        description: Internal Server error.
+        body:
+          application/json:
+            example:
+              message: Internal Server error
+         
+
+      
+      
+      

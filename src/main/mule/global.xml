@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="9e3693ab-68d2-4fe5-9dcc-c5d19d6d62d0" >
+		<db:my-sql-connection host="${db.Host}" port="${db.port}" user="${secure::db.user}" database="${db.database}" />
+	</db:config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="a7550a2c-5050-496b-9fa0-e4cabec3e600" >
+		<salesforce:basic-connection username="${secure::sforce.uname}" password="${secure::sforce.pass}" url="${sforce.authurl}" securityToken="${sforce.sectoken}"/>
+	</salesforce:sfdc-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="549b2919-dbbf-4734-a423-d064e86bff03" />
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="15115936-d94e-4062-9c97-4cef40176317" >
+		<email:smtp-connection host="${smtp.host}" port="${smtp.port}" user="${secure::smtp.usrname}" password="${secure::smtp.passw}" />
+	</email:smtp-config>
+	<configuration doc:name="Configuration" doc:id="2bcc4514-5851-4f54-9f80-f8d5623a3692" defaultErrorHandler-ref="globalError_Handler" />
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="f75a3526-4412-4867-8cd1-850276064515" />
+	<configuration-properties doc:name="Configuration properties" doc:id="39f063a0-70f3-482f-82f0-976902e85ef9" file="config.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="db905231-0cf8-43cb-8662-910fea419dc8" file="config.yaml" key="password12345678" />
+	<api-gateway:autodiscovery apiId="${ad.api}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="4956bfea-9de6-4dc5-9ea5-017f94c13cd4" flowRef="abc-main" />
+	<error-handler name="globalError_Handler" doc:id="24153e41-0c73-48e8-91d1-b3b8bd0b0a2e" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="783662f2-a748-4d58-989d-a20f26b94de7" type="ANY" >
+			<ee:transform doc:name="Error Type and Description" doc:id="ea6fb67c-df17-425f-b586-7510bdedce42" >
+				<ee:message >
+					<ee:set-payload resource="dataweave/error.dwl" />
+				</ee:message>
+			</ee:transform>
+			<email:send doc:name="Send" doc:id="4152a6a7-83a6-4e67-bd72-fea49776e765" config-ref="Email_SMTP" toAddresses="#[p('smtp.to') splitBy &quot;,&quot;]" subject="Error Alert"/>
+		</on-error-propagate>
+	</error-handler>
+</mule>

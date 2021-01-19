@@ -1,0 +1,25 @@
+db:
+  Host:"localhost"
+  port:3306
+  user:"![gxIGKGypfFIuJAY7yirNsw==]"
+  database:"hackathon"
+  
+sforce:
+  uname:"![30dBR4RFdOeCaMcjdmSnT22RFspubw2Uzl494VFj6Pc=]"
+  pass:"![liVCdH4X3darjqwu3jeOJA==]"
+  sectoken:"kNXnzYQ9xgegPJYPDBcx9ja0"
+  authurl:"https://login.Salesforce.com/services/Soap/u/49.0"
+  
+smtp:
+  host:"smtp.gmail.com"
+  port:587
+  usrname:"![30dBR4RFdOeCaMcjdmSnT22RFspubw2Uzl494VFj6Pc=]"
+  passw:"![HRY59tIBLVGupsHxbyh4FQ==]"
+  to:"karthik.raman@apisero.com,ramankm@rknec.edu"
+  
+csv:
+  cron: "0 30 7 1/1 * ? *"
+  dir: "C:\\Users\\raman\\Desktop\\sample.csv"
+  
+ad:
+  api: 16584228
